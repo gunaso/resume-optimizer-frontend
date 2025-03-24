@@ -50,7 +50,7 @@ const Login = () => {
         <motion.div variants={itemVariants} className="text-center mb-8">
           <h1 className="text-3xl font-bold tracking-tight">Welcome Back</h1>
           <p className="text-muted-foreground mt-2">
-            Sign in to your CV Job Matcher account
+            Sign in to your Resume Job Optimizer account
           </p>
         </motion.div>
 

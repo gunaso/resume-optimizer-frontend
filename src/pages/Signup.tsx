@@ -53,7 +53,7 @@ const Signup = () => {
             Create an Account
           </h1>
           <p className="text-muted-foreground mt-2">
-            Join CV Job Matcher and boost your job applications
+            Join Resume Job Optimizer and boost your job applications
           </p>
         </motion.div>
 

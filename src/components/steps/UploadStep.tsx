@@ -26,7 +26,9 @@ const UploadStep: React.FC = () => {
   return (
     <div className="step-container">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-semibold">Upload Your CV & Job Posting</h2>
+        <h2 className="text-2xl font-semibold">
+          Upload Your Resume & Job Posting
+        </h2>
         {(cvFile || jobUrl || profilePicture) && (
           <Button
             variant="outline"
@@ -40,13 +42,13 @@ const UploadStep: React.FC = () => {
         )}
       </div>
       <p className="text-muted-foreground mb-8">
-        We'll analyze both to create a tailored CV that highlights your relevant
-        experience.
+        We'll analyze both to create a tailored resume that highlights your
+        relevant experience.
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
-          <h3 className="text-base font-medium mb-3">Upload CV</h3>
+          <h3 className="text-base font-medium mb-3">Upload Resume</h3>
           <FileUpload
             onFileSelected={handleFileSelected}
             initialFile={cvFile}

@@ -7,9 +7,9 @@ import { Progress } from "@/components/ui/progress"
 const loadingPhrases = [
   "Warming up our systems...",
   "AI is doing its magic...",
-  "Optimizing your CV for the job...",
+  "Optimizing your resume for the job...",
   "Matching your skills to the job requirements...",
-  "Crafting the perfect CV...",
+  "Crafting the perfect resume...",
   "Analyzing job keywords...",
   "Highlighting your relevant experience...",
   "Making you look awesome on paper...",

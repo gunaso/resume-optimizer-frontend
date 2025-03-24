@@ -54,7 +54,7 @@ const StepNavigationFooter: React.FC = () => {
       case Step.TemplateSelection:
         return "Review Job Details"
       case Step.JobDetailsReview:
-        return "Generate CV"
+        return "Generate Resume"
       default:
         return "Next"
     }
@@ -91,7 +91,7 @@ const StepNavigationFooter: React.FC = () => {
           className="gap-2 transition-all duration-300"
         >
           <RotateCcw className="h-4 w-4" />
-          Generate New CV
+          Generate New Resume
         </Button>
       ) : (
         <div></div>

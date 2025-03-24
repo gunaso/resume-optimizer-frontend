@@ -53,7 +53,7 @@ const JobDetailsReview: React.FC<JobDetailsReviewProps> = ({
       <h2 className="text-2xl font-semibold mb-4">Review Job Details</h2>
       <p className="text-muted-foreground mb-8">
         We've analyzed the job posting. Review the details and add any specific
-        instructions for optimizing your CV.
+        instructions for optimizing your resume.
       </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -138,7 +138,7 @@ const JobDetailsReview: React.FC<JobDetailsReviewProps> = ({
             </h3>
             <p className="text-sm text-muted-foreground mb-3">
               Add any specific instructions or preferences for the AI to
-              consider when optimizing your CV.
+              consider when optimizing your resume.
             </p>
             <Textarea
               value={aiInstructions}
@@ -154,9 +154,9 @@ const JobDetailsReview: React.FC<JobDetailsReviewProps> = ({
               <span>What Happens Next?</span>
             </h3>
             <p className="text-sm text-muted-foreground">
-              Our AI will analyze your CV along with this job posting and create
-              a tailored version that highlights your most relevant skills and
-              experience for this specific position.
+              Our AI will analyze your resume along with this job posting and
+              create a tailored version that highlights your most relevant
+              skills and experience for this specific position.
             </p>
           </div>
         </div>

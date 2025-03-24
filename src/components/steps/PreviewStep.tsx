@@ -1,6 +1,7 @@
 import React from "react"
+
+import ResumePreview from "@/components/ResumePreview"
 import { useCvForm } from "@/context/CvFormContext"
-import CVPreview from "@/components/CVPreview"
 import { templates } from "@/data/templates"
 import { useToast } from "@/hooks/use-toast"
 
@@ -13,23 +14,23 @@ const PreviewStep: React.FC = () => {
 
   const handleDownload = () => {
     toast({
-      title: "CV Downloaded",
-      description: "Your tailored CV has been downloaded successfully.",
+      title: "Resume Downloaded",
+      description: "Your tailored resume has been downloaded successfully.",
     })
   }
 
   if (!cvFile || !selectedTemplate) {
-    return <div>Missing required data to preview CV</div>
+    return <div>Missing required data to preview resume</div>
   }
 
   return (
     <div className="step-container">
-      <h2 className="text-2xl font-semibold mb-4">Preview Your CV</h2>
+      <h2 className="text-2xl font-semibold mb-4">Preview Your Resume</h2>
       <p className="text-muted-foreground mb-8">
-        Review your optimized CV and download it when you're ready.
+        Review your optimized resume and download it when you're ready.
       </p>
 
-      <CVPreview
+      <ResumePreview
         template={selectedTemplate}
         cvFile={cvFile}
         jobUrl={jobUrl}

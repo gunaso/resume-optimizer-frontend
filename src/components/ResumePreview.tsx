@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Template } from "./TemplateSelector"
 import { Card } from "@/components/ui/card"
 
-interface CVPreviewProps {
+interface ResumePreviewProps {
   template: Template
   cvFile: File
   jobUrl: string
@@ -83,7 +83,7 @@ const mockAIChanges = [
   },
 ]
 
-const CVPreview: React.FC<CVPreviewProps> = ({
+const ResumePreview: React.FC<ResumePreviewProps> = ({
   template,
   cvFile,
   jobUrl,
@@ -368,4 +368,4 @@ const CVPreview: React.FC<CVPreviewProps> = ({
   )
 }
 
-export default CVPreview
+export default ResumePreview

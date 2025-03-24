@@ -52,12 +52,12 @@ const IndexContent: React.FC = () => {
         >
           <div>
             <h1 className="text-4xl font-bold tracking-tight mb-4">
-              CV Job Matcher
+              Resume Job Optimizer
             </h1>
             <p className="text-muted-foreground max-w-2xl">
-              Upload your CV, provide a job posting URL, and get a
-              professionally tailored CV that highlights your relevant skills
-              and experience.
+              Upload your resume, provide a job posting URL, and get a
+              professionally tailored resume that highlights your relevant
+              skills and experience.
             </p>
           </div>
           <div className="flex gap-3">

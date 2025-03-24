@@ -42,10 +42,10 @@ const StepNavigation: React.FC<StepNavigationProps> = ({ currentStep }) => {
       </div>
       <div className="flex justify-center mt-2">
         <p className="text-sm font-medium">
-          {currentStep === Step.Upload && "Upload CV & Job URL"}
+          {currentStep === Step.Upload && "Upload Resume & Job URL"}
           {currentStep === Step.TemplateSelection && "Select Template"}
           {currentStep === Step.JobDetailsReview && "Review Job Details"}
-          {currentStep === Step.Generating && "Generating CV"}
+          {currentStep === Step.Generating && "Generating Resume"}
           {currentStep === Step.Preview && "Preview & Download"}
         </p>
       </div>
