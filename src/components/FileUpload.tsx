@@ -24,23 +24,23 @@ interface FileUploadProps {
 
 const FileUpload: React.FC<FileUploadProps> = ({
   onFileSelected,
-  acceptedFileTypes = ".pdf,.png",
-  maxSizeMB = 5,
+  acceptedFileTypes = ".pdf,.png,.jpg,.jpeg,.webp",
+  maxSizeMB = 3,
   initialFile = null,
 }) => {
-  const [isDragging, setIsDragging] = useState(false)
-  const [file, setFile] = useState<File | null>(initialFile)
-  const [error, setError] = useState<string | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [showTextDialog, setShowTextDialog] = useState(false)
-  const [cvText, setCvText] = useState("")
-  const [showCvText, setShowCvText] = useState(false)
   const [showInputTypeWarning, setShowInputTypeWarning] = useState(false)
   const [inputTypeToSwitch, setInputTypeToSwitch] = useState<
     "file" | "text" | null
   >(null)
+  const [showTextDialog, setShowTextDialog] = useState(false)
+  const [file, setFile] = useState<File | null>(initialFile)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [error, setError] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [showCvText, setShowCvText] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [cvText, setCvText] = useState("")
 
   useEffect(() => {
     if (initialFile) {
@@ -99,9 +99,17 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const validateAndProcessFile = async (file: File) => {
     setError(null)
 
-    const fileType = file.type
-    if (!(fileType === "application/pdf" || fileType.startsWith("image/png"))) {
-      setError("Please upload a PDF or PNG file")
+    // Convert acceptedFileTypes to array and remove dots
+    const acceptedTypes = acceptedFileTypes
+      .split(",")
+      .map((type) => type.trim().replace(".", ""))
+
+    // Check file extension
+    const fileExtension = file.name.split(".").pop()?.toLowerCase()
+    if (!fileExtension || !acceptedTypes.includes(fileExtension)) {
+      setError(
+        `Please upload a file with one of these formats: ${acceptedFileTypes}`
+      )
       return
     }
 
@@ -214,7 +222,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
                 <Loader2 className="h-6 w-6 text-primary animate-spin" />
               </div>
               <div className="space-y-2">
-                <p className="text-lg font-medium">Uploading your CV</p>
+                <p className="text-lg font-medium">Uploading your resume</p>
                 <Progress value={uploadProgress} className="w-full h-2" />
                 <p className="text-sm text-muted-foreground">
                   {uploadProgress}% complete
@@ -226,7 +234,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                 <Upload className="h-6 w-6 text-primary" />
               </div>
-              <p className="text-lg font-medium mb-1">Upload your CV</p>
+              <p className="text-lg font-medium mb-1">Upload your resume</p>
               <p className="text-sm text-muted-foreground mb-4">
                 Drag and drop your file here or click to browse
               </p>
@@ -247,11 +255,12 @@ const FileUpload: React.FC<FileUploadProps> = ({
                   disabled={isUploading}
                 >
                   <FileText className="h-4 w-4 mr-2" />
-                  Enter CV Text
+                  Enter Resume Text
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground mt-4">
-                Accepted formats: PDF, PNG (max {maxSizeMB}MB) or text input
+                Accepted formats: {acceptedFileTypes.replace(/\./g, " ")} (max{" "}
+                {maxSizeMB}MB) or text input
               </p>
             </>
           )}
@@ -290,7 +299,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
       {showCvText && (
         <div className="mt-3 bg-background rounded-lg border p-4">
           <div className="flex items-center justify-between mb-2">
-            <p className="font-medium text-lg">CV Text:</p>
+            <p className="font-medium text-lg">Resume Text:</p>
             <Button variant="ghost" size="sm" onClick={handleChangeText}>
               Edit
             </Button>
@@ -313,9 +322,9 @@ const FileUpload: React.FC<FileUploadProps> = ({
       <Dialog open={showTextDialog} onOpenChange={setShowTextDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Enter your CV text</DialogTitle>
+            <DialogTitle>Enter your resume text</DialogTitle>
             <DialogDescription>
-              Paste or type your CV content here. Include sections like
+              Paste or type your resume content here. Include sections like
               experience, skills, education, etc.
             </DialogDescription>
           </DialogHeader>
@@ -336,7 +345,7 @@ Education:
           />
           <DialogFooter>
             <Button type="submit" onClick={handleTextSubmit}>
-              Submit CV Text
+              Submit Resume Text
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -353,8 +362,8 @@ Education:
               Change Input Type
             </DialogTitle>
             <DialogDescription>
-              You can only have one type of CV input at a time. Switching will
-              remove your current{" "}
+              You can only have one type of resume input at a time. Switching
+              will remove your current{" "}
               {inputTypeToSwitch === "file" ? "text input" : "file"}.
             </DialogDescription>
           </DialogHeader>
