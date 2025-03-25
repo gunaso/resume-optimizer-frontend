@@ -14,16 +14,21 @@ export interface CvFormState {
   currentStep: Step
   cvFile: File | null
   jobUrl: string
+  jobDetails: string
+  isProcessingUrl: boolean
   profilePicture: File | null
   selectedTemplateId: string | null
   aiInstructions: string
   showPictureWarning: boolean
+  _resetTimestamp: number
 }
 
 type CvFormAction =
   | { type: "SET_STEP"; payload: Step }
   | { type: "SET_CV_FILE"; payload: File | null }
   | { type: "SET_JOB_URL"; payload: string }
+  | { type: "SET_JOB_DETAILS"; payload: string }
+  | { type: "SET_PROCESSING_URL"; payload: boolean }
   | { type: "SET_PROFILE_PICTURE"; payload: File | null }
   | { type: "SET_TEMPLATE"; payload: string | null }
   | { type: "SET_AI_INSTRUCTIONS"; payload: string }
@@ -36,10 +41,13 @@ const initialState: CvFormState = {
   currentStep: Step.Upload,
   cvFile: null,
   jobUrl: "",
+  jobDetails: "",
+  isProcessingUrl: false,
   profilePicture: null,
   selectedTemplateId: null,
   aiInstructions: "",
   showPictureWarning: false,
+  _resetTimestamp: 0,
 }
 
 const reducer = (state: CvFormState, action: CvFormAction): CvFormState => {
@@ -50,6 +58,10 @@ const reducer = (state: CvFormState, action: CvFormAction): CvFormState => {
       return { ...state, cvFile: action.payload }
     case "SET_JOB_URL":
       return { ...state, jobUrl: action.payload }
+    case "SET_JOB_DETAILS":
+      return { ...state, jobDetails: action.payload }
+    case "SET_PROCESSING_URL":
+      return { ...state, isProcessingUrl: action.payload }
     case "SET_PROFILE_PICTURE":
       return { ...state, profilePicture: action.payload }
     case "SET_TEMPLATE":
@@ -59,7 +71,11 @@ const reducer = (state: CvFormState, action: CvFormAction): CvFormState => {
     case "SET_PICTURE_WARNING":
       return { ...state, showPictureWarning: action.payload }
     case "RESET_FORM":
-      return initialState
+      return {
+        ...initialState,
+        currentStep: Step.Upload,
+        _resetTimestamp: Date.now(),
+      }
     case "NEXT_STEP":
       return {
         ...state,
@@ -88,6 +104,7 @@ interface CvFormContextProps {
   validateCurrentStep: () => boolean
   proceedToNextStep: () => void
   resetForm: () => void
+  processJobUrl: (url: string) => Promise<void>
 }
 
 const CvFormContext = createContext<CvFormContextProps | null>(null)
@@ -107,11 +124,11 @@ export const CvFormProvider: React.FC<{ children: ReactNode }> = ({
   const validateCurrentStep = (): boolean => {
     switch (state.currentStep) {
       case Step.Upload:
-        return Boolean(state.cvFile && state.jobUrl)
+        return Boolean(state.cvFile && (state.jobUrl || state.jobDetails))
       case Step.TemplateSelection:
         return Boolean(state.selectedTemplateId)
       case Step.JobDetailsReview:
-        return true // Job details review doesn't require validation
+        return Boolean(state.jobDetails) // Now requiring job details to proceed
       default:
         return true
     }
@@ -127,6 +144,33 @@ export const CvFormProvider: React.FC<{ children: ReactNode }> = ({
     dispatch({ type: "RESET_FORM" })
   }
 
+  const processJobUrl = async (url: string) => {
+    try {
+      dispatch({ type: "SET_PROCESSING_URL", payload: true })
+
+      // Mock API call to process the job URL
+      const response = await fetch("/api/process-job-url", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to process job URL")
+      }
+
+      const data = await response.json()
+      dispatch({ type: "SET_JOB_DETAILS", payload: data.jobDetails })
+    } catch (error) {
+      console.error("Error processing job URL:", error)
+      // Could add error handling state here if needed
+    } finally {
+      dispatch({ type: "SET_PROCESSING_URL", payload: false })
+    }
+  }
+
   return (
     <CvFormContext.Provider
       value={{
@@ -136,6 +180,7 @@ export const CvFormProvider: React.FC<{ children: ReactNode }> = ({
         validateCurrentStep,
         proceedToNextStep,
         resetForm,
+        processJobUrl,
       }}
     >
       {children}

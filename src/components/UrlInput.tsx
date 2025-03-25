@@ -2,27 +2,36 @@ import React, { useState, useEffect } from "react"
 import { Link, AlertCircle, Loader2, Link2Off, FileText } from "lucide-react"
 
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import {
-  DialogDescription,
+  Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  Dialog,
 } from "@/components/ui/dialog"
+import { TextInputDialog } from "@/components/TextInputDialog"
+import { MarkdownPreview } from "@/components/MarkdownPreview"
 
 interface UrlInputProps {
   onUrlSubmit: (url: string) => void
   initialUrl?: string
+  initialJobText?: string
+  onProcessUrl?: (url: string) => Promise<void>
+  isProcessingUrl?: boolean
+  onJobDetailsChange?: (details: string) => void
 }
 
 const UrlInput: React.FC<UrlInputProps> = ({
   onUrlSubmit,
   initialUrl = "",
+  initialJobText = "",
+  onProcessUrl,
+  isProcessingUrl = false,
+  onJobDetailsChange,
 }) => {
   const [url, setUrl] = useState(initialUrl)
   const [error, setError] = useState<string | null>(null)
@@ -31,8 +40,8 @@ const UrlInput: React.FC<UrlInputProps> = ({
   const [isLinkedIn, setIsLinkedIn] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [showTextDialog, setShowTextDialog] = useState(false)
-  const [jobText, setJobText] = useState("")
-  const [showJobText, setShowJobText] = useState(false)
+  const [jobText, setJobText] = useState(initialJobText)
+  const [showJobText, setShowJobText] = useState(!!initialJobText)
   const [showInputTypeWarning, setShowInputTypeWarning] = useState(false)
   const [inputTypeToSwitch, setInputTypeToSwitch] = useState<
     "url" | "text" | null
@@ -44,21 +53,13 @@ const UrlInput: React.FC<UrlInputProps> = ({
       setUrl(initialUrl)
       validateUrl(initialUrl)
       setIsSubmitted(true)
-
-      // Check if it's a data URL (text input)
-      if (initialUrl.startsWith("data:text/plain;base64,")) {
-        try {
-          const textContent = atob(initialUrl.split(",")[1])
-          setJobText(textContent)
-          setShowJobText(true)
-        } catch (e) {
-          console.error("Failed to decode base64 URL")
-        }
-      } else {
-        setShowJobText(false)
-      }
     }
-  }, [initialUrl])
+
+    if (initialJobText) {
+      setJobText(initialJobText)
+      setShowJobText(true)
+    }
+  }, [initialUrl, initialJobText])
 
   const validateUrl = (input: string) => {
     setError(null)
@@ -119,21 +120,14 @@ const UrlInput: React.FC<UrlInputProps> = ({
       setIsLoading(true)
 
       try {
-        // Simulate a network request
-        await new Promise((resolve) => setTimeout(resolve, 2000))
+        // Submit the URL for backend processing
+        onUrlSubmit(url)
 
-        // Randomly simulate an error for demonstration
-        const cannotScrape = Math.random() < 0.3
-
-        if (cannotScrape) {
-          setError(
-            "This URL cannot be scraped. The website might be blocking our system."
-          )
-          setIsLoading(false)
-          return
+        // If onProcessUrl is provided, call it to process the URL
+        if (onProcessUrl) {
+          await onProcessUrl(url)
         }
 
-        onUrlSubmit(url)
         setIsSubmitted(true)
         setShowJobText(false)
         setJobText("")
@@ -147,16 +141,22 @@ const UrlInput: React.FC<UrlInputProps> = ({
     }
   }
 
-  const handleTextSubmit = () => {
-    if (jobText.trim()) {
-      // Create a mock URL with the text content encoded
-      const mockUrl = `data:text/plain;base64,${btoa(jobText)}`
+  const handleTextSubmit = (text: string) => {
+    if (text.trim()) {
       setUrl("")
       setIsValid(false)
       setIsSubmitted(false)
       setShowJobText(true)
+      setJobText(text)
       setShowTextDialog(false)
-      onUrlSubmit(mockUrl)
+
+      // Update job details directly if handler provided
+      if (onJobDetailsChange) {
+        onJobDetailsChange(text)
+      }
+
+      // Clear URL but still call onUrlSubmit with empty string to update state
+      onUrlSubmit("")
     }
   }
 
@@ -178,6 +178,12 @@ const UrlInput: React.FC<UrlInputProps> = ({
     if (inputTypeToSwitch === "url") {
       setShowJobText(false)
       setJobText("")
+
+      // Clear job details if handler provided
+      if (onJobDetailsChange) {
+        onJobDetailsChange("")
+      }
+
       // After clearing job text, validate and submit the URL
       if (isValid && url.trim()) {
         // Simulate submitting the form
@@ -214,7 +220,7 @@ const UrlInput: React.FC<UrlInputProps> = ({
               error && "border-destructive",
               isSubmitted && isValid && "bg-green-50"
             )}
-            disabled={isLoading}
+            disabled={isLoading || isProcessingUrl}
           />
         </div>
 
@@ -235,9 +241,9 @@ const UrlInput: React.FC<UrlInputProps> = ({
           <Button
             type="submit"
             className="flex-1 transition-all duration-300 gap-2"
-            disabled={!isValid || isLoading || isSubmitted}
+            disabled={!isValid || isLoading || isSubmitted || isProcessingUrl}
           >
-            {isLoading ? (
+            {isLoading || isProcessingUrl ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span>Analyzing URL...</span>
@@ -255,11 +261,13 @@ const UrlInput: React.FC<UrlInputProps> = ({
             onClick={handleShowTextDialog}
             className="transition-all duration-300 gap-2"
             disabled={
-              isLoading || (isValid && url.trim().length > 0 && !isSubmitted)
+              isLoading ||
+              isProcessingUrl ||
+              (isValid && url.trim().length > 0 && !isSubmitted)
             }
           >
             <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">Enter</span> Job Text
+            <span className="hidden sm:inline">Enter Job Text</span>
           </Button>
         </div>
       </form>
@@ -278,26 +286,21 @@ const UrlInput: React.FC<UrlInputProps> = ({
               Edit
             </Button>
           </div>
-          <div className="max-h-[150px] overflow-y-auto text-sm whitespace-pre-line">
-            {jobText}
+          <div className="max-h-[150px] overflow-y-auto text-sm">
+            <MarkdownPreview content={jobText} />
           </div>
         </div>
       )}
 
-      {/* Dialog for entering job description text */}
-      <Dialog open={showTextDialog} onOpenChange={setShowTextDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Enter Job Description</DialogTitle>
-            <DialogDescription>
-              Paste or type the job description if you can't provide a URL or if
-              the URL can't be scraped.
-            </DialogDescription>
-          </DialogHeader>
-          <Textarea
-            value={jobText}
-            onChange={(e) => setJobText(e.target.value)}
-            placeholder="Job Title: [Position]
+      {/* TextInputDialog for entering job description text */}
+      <TextInputDialog
+        isOpen={showTextDialog}
+        onClose={() => setShowTextDialog(false)}
+        onSubmit={handleTextSubmit}
+        initialText={jobText}
+        title="Enter Job Description"
+        description="Paste or type the job description if you can't provide a URL or if the URL can't be scraped."
+        placeholder="Job Title: [Position]
 Company: [Company Name]
 Location: [Location]
 
@@ -311,22 +314,15 @@ Requirements:
 Responsibilities:
 - Responsibility 1
 - Responsibility 2"
-            className="min-h-[200px]"
-          />
-          <DialogFooter>
-            <Button type="submit" onClick={handleTextSubmit}>
-              Submit Job Description
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        submitButtonText="Submit Job Description"
+      />
 
       {/* Warning dialog for switching input types */}
       <Dialog
         open={showInputTypeWarning}
         onOpenChange={setShowInputTypeWarning}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-amber-600">
               <AlertCircle className="h-5 w-5" />

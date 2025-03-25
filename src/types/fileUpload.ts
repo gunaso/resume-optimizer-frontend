@@ -24,13 +24,6 @@ export interface FilePreviewProps {
   disabled?: boolean
 }
 
-export interface TextInputDialogProps {
-  isOpen: boolean
-  onClose: () => void
-  onSubmit: (text: string) => void
-  initialText?: string
-}
-
 export interface InputTypeWarningDialogProps {
   isOpen: boolean
   onClose: () => void

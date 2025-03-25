@@ -1,4 +1,4 @@
-import { AlertCircle, Upload } from "lucide-react"
+import { AlertCircle, Upload, FileText, Trash2 } from "lucide-react"
 import React, { useRef, useState } from "react"
 
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -8,6 +8,18 @@ import { FileUploadProps } from "@/types/fileUpload"
 import { Button } from "@/components/ui/button"
 import { useFileUploadMutation } from "@/hooks/useFileUploadMutation"
 import { Progress } from "@/components/ui/progress"
+import { TextInputDialog } from "@/components/TextInputDialog"
+import { MarkdownPreview } from "@/components/MarkdownPreview"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 const FileUpload: React.FC<FileUploadProps> = ({
   onFileSelected,
@@ -18,6 +30,10 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const [files, setFiles] = useState<File[]>(initialFile ? [initialFile] : [])
   const [isDragging, setIsDragging] = useState(false)
   const [validationError, setValidationError] = useState<string | null>(null)
+  const [showTextDialog, setShowTextDialog] = useState(false)
+  const [resumeText, setResumeText] = useState("")
+  const [showResumeText, setShowResumeText] = useState(false)
+  const [showRemoveConfirmDialog, setShowRemoveConfirmDialog] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const {
@@ -113,6 +129,46 @@ const FileUpload: React.FC<FileUploadProps> = ({
     }
   }
 
+  const handleRemoveResumeText = () => {
+    setShowRemoveConfirmDialog(true)
+  }
+
+  const confirmRemoveResumeText = () => {
+    setResumeText("")
+    setShowResumeText(false)
+    setShowRemoveConfirmDialog(false)
+    onFileSelected(null as any)
+  }
+
+  const handleTextInput = () => {
+    if (files.length > 0) {
+      // If there are files, we should warn the user that entering text will replace them
+      // This would require an additional warning dialog component
+      // For now, let's just remove the files and open the dialog
+      setFiles([])
+      onFileSelected(null as any)
+    }
+
+    setShowTextDialog(true)
+  }
+
+  const handleTextSubmit = (text: string) => {
+    setResumeText(text)
+    setShowResumeText(true)
+    setShowTextDialog(false)
+
+    // Create a text blob to mimic a file
+    const textBlob = new Blob([text], { type: "text/plain" })
+    const textFile = new File([textBlob], "resume.txt", { type: "text/plain" })
+
+    // Notify parent component
+    onFileSelected(textFile)
+  }
+
+  const handleEditResumeText = () => {
+    setShowTextDialog(true)
+  }
+
   // Check if we can add more files (less than 3 images and no PDFs)
   const canAddMoreFiles = () => {
     const hasPdf = files.some((file) => file.type === "application/pdf")
@@ -134,7 +190,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         disabled={isUploading}
       />
 
-      {files.length === 0 ? (
+      {files.length === 0 && !showResumeText ? (
         <FileDropZone
           onDrop={handleFileDrop}
           isDragging={isDragging}
@@ -143,7 +199,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
           acceptedFileTypes={acceptedFileTypes}
           maxSizeMB={maxSizeMB}
           onFileSelect={handleFileSelect}
-          onTextInput={() => {}}
+          onTextInput={handleTextInput}
           disabled={isUploading}
           setIsDragging={setIsDragging}
         />
@@ -158,6 +214,36 @@ const FileUpload: React.FC<FileUploadProps> = ({
             />
           ))}
 
+          {showResumeText && (
+            <div className="mt-3 bg-muted/30 rounded-lg border p-3">
+              <div className="flex items-center justify-between mb-2">
+                <p className="font-medium">Resume Text:</p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRemoveResumeText}
+                    className="h-7 px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Remove
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleEditResumeText}
+                    className="h-7 px-2"
+                  >
+                    Edit
+                  </Button>
+                </div>
+              </div>
+              <div className="max-h-[150px] overflow-y-auto text-sm">
+                <MarkdownPreview content={resumeText} />
+              </div>
+            </div>
+          )}
+
           {isUploading && (
             <div className="mt-4">
               <div className="flex justify-between mb-2 text-sm">
@@ -169,7 +255,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
           )}
 
           <div className="flex justify-end mt-4">
-            {canAddMoreFiles() && (
+            {!showResumeText && canAddMoreFiles() && (
               <Button
                 variant="outline"
                 onClick={handleFileSelect}
@@ -180,14 +266,27 @@ const FileUpload: React.FC<FileUploadProps> = ({
                 Add More Files
               </Button>
             )}
-            <Button
-              onClick={handleUpload}
-              disabled={isUploading || files.length === 0}
-              className="flex items-center gap-2"
-            >
-              <Upload className="h-4 w-4" />
-              Upload {files.length > 1 ? `(${files.length} files)` : ""}
-            </Button>
+            {!showResumeText && files.length === 0 && (
+              <Button
+                variant="outline"
+                onClick={handleTextInput}
+                disabled={isUploading}
+                className="flex items-center gap-2 mr-2"
+              >
+                <FileText className="h-4 w-4" />
+                Enter Resume Text
+              </Button>
+            )}
+            {!showResumeText && files.length > 0 && (
+              <Button
+                onClick={handleUpload}
+                disabled={isUploading}
+                className="flex items-center gap-2"
+              >
+                <Upload className="h-4 w-4" />
+                Upload {files.length > 1 ? `(${files.length} files)` : ""}
+              </Button>
+            )}
           </div>
         </div>
       )}
@@ -202,6 +301,50 @@ const FileUpload: React.FC<FileUploadProps> = ({
           </div>
         </Alert>
       )}
+
+      <TextInputDialog
+        isOpen={showTextDialog}
+        onClose={() => setShowTextDialog(false)}
+        onSubmit={handleTextSubmit}
+        initialText={resumeText}
+        title="Enter Resume Text"
+        description="Paste or type your resume content here. Include sections like experience, skills, education, etc."
+        placeholder="Experience:
+- Position at Company (Date - Date)
+- Responsibilities and achievements
+
+Skills:
+- Skill 1
+- Skill 2
+
+Education:
+- Degree, Institution (Year)"
+        submitButtonText="Submit Resume Text"
+      />
+
+      <AlertDialog
+        open={showRemoveConfirmDialog}
+        onOpenChange={setShowRemoveConfirmDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Resume Text</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove your resume text? This action
+              cannot be undone and all text will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmRemoveResumeText}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

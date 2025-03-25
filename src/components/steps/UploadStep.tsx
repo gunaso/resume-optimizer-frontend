@@ -1,15 +1,23 @@
-import { RefreshCw } from "lucide-react"
-import React from "react"
+import React, { useState, useEffect } from "react"
 
 import ProfilePictureUpload from "@/components/ProfilePictureUpload"
 import { useCvForm } from "@/context/CvFormContext"
+import RestartButton from "@/components/RestartButton"
 import FileUpload from "@/components/FileUpload"
-import { Button } from "@/components/ui/button"
 import UrlInput from "@/components/UrlInput"
 
 const UploadStep: React.FC = () => {
-  const { state, dispatch, resetForm } = useCvForm()
-  const { cvFile, jobUrl, profilePicture } = state
+  const { state, dispatch, processJobUrl } = useCvForm()
+  const { cvFile, jobUrl, jobDetails, profilePicture, isProcessingUrl } = state
+  const [resetKey, setResetKey] = useState(0)
+
+  // Monitor changes to form state to detect resets
+  useEffect(() => {
+    if (!cvFile && !jobUrl && !profilePicture) {
+      // Increment reset key to force component remount when form is reset
+      setResetKey((prev) => prev + 1)
+    }
+  }, [cvFile, jobUrl, profilePicture])
 
   const handleFileSelected = (file: File) => {
     dispatch({ type: "SET_CV_FILE", payload: file })
@@ -17,6 +25,10 @@ const UploadStep: React.FC = () => {
 
   const handleUrlSubmit = (url: string) => {
     dispatch({ type: "SET_JOB_URL", payload: url })
+  }
+
+  const handleJobDetailsChange = (details: string) => {
+    dispatch({ type: "SET_JOB_DETAILS", payload: details })
   }
 
   const handleProfilePictureSelected = (file: File) => {
@@ -29,17 +41,7 @@ const UploadStep: React.FC = () => {
         <h2 className="text-2xl font-semibold">
           Upload Your Resume & Job Posting
         </h2>
-        {(cvFile || jobUrl || profilePicture) && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={resetForm}
-            className="gap-2 text-muted-foreground hover:text-destructive"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Restart
-          </Button>
-        )}
+        {(cvFile || jobUrl || profilePicture) && <RestartButton />}
       </div>
       <p className="text-muted-foreground mb-8">
         We'll analyze both to create a tailored resume that highlights your
@@ -50,6 +52,7 @@ const UploadStep: React.FC = () => {
         <div>
           <h3 className="text-base font-medium mb-3">Upload Resume</h3>
           <FileUpload
+            key={`file-upload-${resetKey}`}
             onFileSelected={handleFileSelected}
             initialFile={cvFile}
           />
@@ -58,10 +61,19 @@ const UploadStep: React.FC = () => {
         <div className="space-y-8">
           <div>
             <h3 className="text-base font-medium mb-3">Job Posting URL</h3>
-            <UrlInput onUrlSubmit={handleUrlSubmit} initialUrl={jobUrl} />
+            <UrlInput
+              key={`url-input-${resetKey}`}
+              onUrlSubmit={handleUrlSubmit}
+              initialUrl={jobUrl}
+              initialJobText={jobDetails}
+              onProcessUrl={processJobUrl}
+              isProcessingUrl={isProcessingUrl}
+              onJobDetailsChange={handleJobDetailsChange}
+            />
           </div>
 
           <ProfilePictureUpload
+            key={`profile-picture-${resetKey}`}
             onImageSelected={handleProfilePictureSelected}
             initialImage={profilePicture}
           />

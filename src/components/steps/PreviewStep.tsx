@@ -2,6 +2,7 @@ import React from "react"
 
 import ResumePreview from "@/components/ResumePreview"
 import { useCvForm } from "@/context/CvFormContext"
+import RestartButton from "@/components/RestartButton"
 import { templates } from "@/data/templates"
 import { useToast } from "@/hooks/use-toast"
 
@@ -25,7 +26,10 @@ const PreviewStep: React.FC = () => {
 
   return (
     <div className="step-container">
-      <h2 className="text-2xl font-semibold mb-4">Preview Your Resume</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-semibold">Preview Your Resume</h2>
+        <RestartButton size="default" />
+      </div>
       <p className="text-muted-foreground mb-8">
         Review your optimized resume and download it when you're ready.
       </p>
