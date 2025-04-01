@@ -19,7 +19,7 @@ const UploadStep: React.FC = () => {
     }
   }, [cvFile, jobUrl, profilePicture])
 
-  const handleFileSelected = (file: File) => {
+  const handleFileSelected = (file: File | null) => {
     dispatch({ type: "SET_CV_FILE", payload: file })
   }
 

@@ -1,4 +1,4 @@
-import { checkPdfPageCount } from "@/api/fileService"
+import { checkPdfPageCount } from "@/utils/pdfUtils"
 
 interface ValidationResult {
   isValid: boolean
