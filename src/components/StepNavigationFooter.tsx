@@ -28,11 +28,6 @@ const StepNavigationFooter: React.FC = () => {
       if (!validateCurrentStep()) {
         return
       }
-
-      if (!state.profilePicture) {
-        dispatch({ type: "SET_PICTURE_WARNING", payload: true })
-        return
-      }
     }
 
     if (currentStep === Step.TemplateSelection && !validateCurrentStep()) {

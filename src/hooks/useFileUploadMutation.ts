@@ -30,9 +30,12 @@ export const useFileUploadMutation = (): FileUploadMutationResult => {
       // Validate file count and type restrictions
       const pdfFiles = files.filter((file) => file.type === "application/pdf")
       const imageFiles = files.filter((file) => file.type.startsWith("image/"))
+      const txtFiles = files.filter((file) => file.type === "text/plain")
       const otherFiles = files.filter(
         (file) =>
-          !file.type.startsWith("image/") && file.type !== "application/pdf"
+          !file.type.startsWith("image/") &&
+          file.type !== "application/pdf" &&
+          file.type !== "text/plain"
       )
 
       // Check for unsupported file types
@@ -40,36 +43,55 @@ export const useFileUploadMutation = (): FileUploadMutationResult => {
         return {
           isValid: false,
           error:
-            "Only PDF and image files (PNG, JPG, JPEG, WEBP) are supported.",
+            "Only PDF and image files (PNG, JPG, JPEG, WEBP) are supported for direct upload.",
         }
       }
 
-      // Check if there's a mix of PDF and image files
-      if (pdfFiles.length > 0 && imageFiles.length > 0) {
+      // Special case for manually entered text (single TXT file with name "resume.txt")
+      // This allows TXT files created programmatically but not uploaded directly
+      const isProgrammaticTxtFile =
+        txtFiles.length === 1 &&
+        files.length === 1 &&
+        files[0].name === "resume.txt"
+
+      // If we have TXT files that aren't from the manual text entry
+      if (txtFiles.length > 0 && !isProgrammaticTxtFile) {
         return {
           isValid: false,
           error:
-            "You can upload either images or a PDF file, but not both at the same time.",
+            "TXT files cannot be uploaded directly. Please enter text using the 'Enter Resume Text' option.",
         }
       }
 
-      // Check PDF count restriction (only 1 PDF allowed)
-      if (pdfFiles.length > 1) {
-        return {
-          isValid: false,
-          error: "You can only upload 1 PDF file at a time.",
+      // For normal file uploads (not programmatic TXT files)
+      if (!isProgrammaticTxtFile) {
+        // Check if there's a mix of PDF and image files
+        if (pdfFiles.length > 0 && imageFiles.length > 0) {
+          return {
+            isValid: false,
+            error:
+              "You can upload either images or a PDF file, but not both at the same time.",
+          }
+        }
+
+        // Check PDF count restriction (only 1 PDF allowed)
+        if (pdfFiles.length > 1) {
+          return {
+            isValid: false,
+            error: "You can only upload 1 PDF file at a time.",
+          }
+        }
+
+        // Check image count restriction (max 3 images)
+        if (imageFiles.length > 3) {
+          return {
+            isValid: false,
+            error: "You can only upload a maximum of 3 images.",
+          }
         }
       }
 
-      // Check image count restriction (max 3 images)
-      if (imageFiles.length > 3) {
-        return {
-          isValid: false,
-          error: "You can only upload a maximum of 3 images.",
-        }
-      }
-
-      // Check file size limit (3MB)
+      // Check file size limit (3MB) - this applies to all files including TXT
       const maxSizeMB = 3
       const oversizedFiles = files.filter(
         (file) => file.size > maxSizeMB * 1024 * 1024

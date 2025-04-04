@@ -80,17 +80,14 @@ const UrlInput: React.FC<UrlInputProps> = ({
       }
 
       // Check if it's a LinkedIn job posting
-      if (
-        urlObj.hostname.includes("linkedin.com") &&
-        urlObj.pathname.includes("/jobs/")
-      ) {
-        setIsLinkedIn(true)
-        setError(
-          "LinkedIn job postings cannot be scraped due to their terms of service"
-        )
-        setIsValid(false)
-        return
-      }
+      // if (urlObj.hostname.includes("linkedin.com")) {
+      //   setIsLinkedIn(true)
+      //   setError(
+      //     "LinkedIn job postings cannot be scraped due to their terms of service"
+      //   )
+      //   setIsValid(false)
+      //   return
+      // }
 
       setIsValid(true)
     } catch (e) {
@@ -126,11 +123,11 @@ const UrlInput: React.FC<UrlInputProps> = ({
         // If onProcessUrl is provided, call it to process the URL
         if (onProcessUrl) {
           await onProcessUrl(url)
+          // After processing, show the job text area with the processed content
+          setShowJobText(true)
         }
 
         setIsSubmitted(true)
-        setShowJobText(false)
-        setJobText("")
       } catch (err) {
         setError("Failed to process the URL. Please try again.")
       } finally {
@@ -216,9 +213,10 @@ const UrlInput: React.FC<UrlInputProps> = ({
             onChange={handleInputChange}
             className={cn(
               "pl-10 transition-all duration-300",
-              isValid && "border-green-500",
+              isValid && !error && "border-green-500",
               error && "border-destructive",
-              isSubmitted && isValid && "bg-green-50"
+              error && "bg-red-50",
+              isSubmitted && isValid && !error && "bg-green-50"
             )}
             disabled={isLoading || isProcessingUrl}
           />
@@ -241,14 +239,19 @@ const UrlInput: React.FC<UrlInputProps> = ({
           <Button
             type="submit"
             className="flex-1 transition-all duration-300 gap-2"
-            disabled={!isValid || isLoading || isSubmitted || isProcessingUrl}
+            disabled={
+              !isValid ||
+              isLoading ||
+              (isSubmitted && !error) ||
+              isProcessingUrl
+            }
           >
             {isLoading || isProcessingUrl ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span>Analyzing URL...</span>
               </>
-            ) : isSubmitted ? (
+            ) : isSubmitted && !error ? (
               "URL Submitted"
             ) : (
               "Submit URL"
@@ -286,7 +289,7 @@ const UrlInput: React.FC<UrlInputProps> = ({
               Edit
             </Button>
           </div>
-          <div className="max-h-[150px] overflow-y-auto text-sm">
+          <div className="max-h-[300px] overflow-y-auto text-sm">
             <MarkdownPreview content={jobText} />
           </div>
         </div>

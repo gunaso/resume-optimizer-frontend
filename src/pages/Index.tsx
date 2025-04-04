@@ -4,7 +4,6 @@ import React from "react"
 
 import TemplateSelectionStep from "@/components/steps/TemplateSelectionStep"
 import { CvFormProvider, useCvForm, Step } from "@/context/CvFormContext"
-import PictureWarningDialog from "@/components/PictureWarningDialog"
 import StepNavigationFooter from "@/components/StepNavigationFooter"
 import JobDetailsStep from "@/components/steps/JobDetailsStep"
 import GeneratingStep from "@/components/steps/GeneratingStep"
@@ -88,8 +87,6 @@ const IndexContent: React.FC = () => {
 
           <StepNavigationFooter />
         </motion.div>
-
-        <PictureWarningDialog />
       </motion.div>
     </div>
   )

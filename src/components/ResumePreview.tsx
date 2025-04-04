@@ -12,6 +12,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Template } from "./TemplateSelector"
 import { Card } from "@/components/ui/card"
+import { MarkdownPreview } from "@/components/MarkdownPreview"
 
 interface ResumePreviewProps {
   template: Template
@@ -19,40 +20,8 @@ interface ResumePreviewProps {
   jobUrl: string
   profilePicture?: File | null
   aiInstructions?: string
+  jobDetails?: string
   onDownload: () => void
-}
-
-// Mocked job details data - same as in JobDetailsReview
-const mockJobDetails = {
-  title: "Senior Frontend Developer",
-  company: "TechInnovate Solutions",
-  location: "Remote (US-based)",
-  description: `
-## About the Role:
-We are seeking an experienced Frontend Developer to join our growing team. You'll be responsible for building user interfaces for our enterprise SaaS products, collaborating with designers and backend developers to create intuitive, responsive, and accessible web applications.
-
-## Key Requirements:
-- 4+ years of experience with React and modern JavaScript
-- Strong understanding of responsive design principles
-- Experience with TypeScript, state management libraries
-- Knowledge of build systems and performance optimization
-- Ability to write clean, maintainable code
-  `,
-  skills: [
-    "React",
-    "TypeScript",
-    "Responsive Design",
-    "JavaScript",
-    "CSS/SCSS",
-    "Web Accessibility",
-    "Performance Optimization",
-  ],
-  keyPoints: [
-    "Enterprise SaaS product focus",
-    "Collaborative team environment",
-    "Modern tech stack",
-    "Remote work position",
-  ],
 }
 
 // Mocked AI explanations
@@ -89,6 +58,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
   jobUrl,
   profilePicture = null,
   aiInstructions = "",
+  jobDetails = "",
   onDownload,
 }) => {
   const [activeTab, setActiveTab] = useState("preview")
@@ -195,14 +165,16 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="text-lg font-medium">Job Details Analysis</h4>
-                <a
-                  href={jobUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline"
-                >
-                  View Original Posting
-                </a>
+                {jobUrl && (
+                  <a
+                    href={jobUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:underline"
+                  >
+                    View Original Posting
+                  </a>
+                )}
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -215,74 +187,23 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
                       Job Details
                     </h3>
 
-                    <div className="space-y-4">
-                      <div>
-                        <h4 className="font-medium text-sm uppercase tracking-wider text-muted-foreground">
-                          Position
-                        </h4>
-                        <p className="font-medium text-lg">
-                          {mockJobDetails.title}
-                        </p>
+                    {jobDetails ? (
+                      <div className="mt-1 text-sm bg-muted/30 p-3 rounded-md max-h-[400px] overflow-y-auto">
+                        <MarkdownPreview content={jobDetails} />
                       </div>
-
-                      <div className="flex justify-between">
+                    ) : (
+                      <div className="space-y-4">
                         <div>
-                          <h4 className="font-medium text-sm uppercase tracking-wider text-muted-foreground">
-                            Company
-                          </h4>
-                          <p>{mockJobDetails.company}</p>
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-sm uppercase tracking-wider text-muted-foreground">
-                            Location
-                          </h4>
-                          <p>{mockJobDetails.location}</p>
+                          <p className="text-sm text-muted-foreground">
+                            No detailed job information available.
+                          </p>
                         </div>
                       </div>
-
-                      <div>
-                        <h4 className="font-medium text-sm uppercase tracking-wider text-muted-foreground">
-                          Description
-                        </h4>
-                        <div className="mt-1 text-sm whitespace-pre-line bg-muted/30 p-3 rounded-md">
-                          {mockJobDetails.description}
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-
-                  <Card className="p-5 border shadow-sm">
-                    <h3 className="text-base font-medium mb-3">
-                      Key Skills Identified
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {mockJobDetails.skills.map((skill, index) => (
-                        <span
-                          key={index}
-                          className="bg-primary/10 text-primary px-2 py-1 rounded-md text-sm"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
+                    )}
                   </Card>
                 </div>
 
                 <div className="space-y-6">
-                  <Card className="p-5 border shadow-sm">
-                    <h3 className="text-base font-medium mb-3">Key Points</h3>
-                    <ul className="space-y-2">
-                      {mockJobDetails.keyPoints.map((point, index) => (
-                        <li key={index} className="flex items-start">
-                          <span className="bg-primary/10 p-1 rounded-full mr-2 mt-0.5">
-                            <Sparkles className="h-3 w-3 text-primary" />
-                          </span>
-                          <span>{point}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </Card>
-
                   {aiInstructions && (
                     <Card className="p-5 border shadow-sm">
                       <h3 className="text-base font-medium mb-3">

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react"
 
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
+import { MarkdownPreview } from "@/components/MarkdownPreview"
 
 // Mock job details data since we're not actually scraping the website
 const mockJobDetails = {
@@ -101,7 +102,7 @@ const JobDetailsReview: React.FC<JobDetailsReviewProps> = ({
                 <Textarea
                   value={editableJobDetails}
                   onChange={handleJobDetailsChange}
-                  className="min-h-[200px] resize-none"
+                  className="min-h-[300px] resize-none"
                   placeholder="Enter job details"
                 />
                 <button
@@ -112,8 +113,8 @@ const JobDetailsReview: React.FC<JobDetailsReviewProps> = ({
                 </button>
               </div>
             ) : jobDetails ? (
-              <div className="mt-1 text-sm whitespace-pre-line bg-muted/30 p-3 rounded-md">
-                {jobDetails}
+              <div className="mt-1 text-sm bg-muted/30 p-3 rounded-md max-h-[400px] overflow-y-auto">
+                <MarkdownPreview content={jobDetails} />
               </div>
             ) : (
               <div className="space-y-4">

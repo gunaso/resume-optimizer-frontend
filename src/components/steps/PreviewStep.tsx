@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast"
 
 const PreviewStep: React.FC = () => {
   const { state, getSelectedTemplate } = useCvForm()
-  const { cvFile, jobUrl, profilePicture, aiInstructions } = state
+  const { cvFile, jobUrl, profilePicture, aiInstructions, jobDetails } = state
   const { toast } = useToast()
 
   const selectedTemplate = getSelectedTemplate(templates)
@@ -40,6 +40,7 @@ const PreviewStep: React.FC = () => {
         jobUrl={jobUrl}
         profilePicture={profilePicture}
         aiInstructions={aiInstructions}
+        jobDetails={jobDetails}
         onDownload={handleDownload}
       />
     </div>

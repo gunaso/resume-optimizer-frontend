@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react"
 
-import ProfilePictureUpload from "@/components/ProfilePictureUpload"
 import { useCvForm } from "@/context/CvFormContext"
 import RestartButton from "@/components/RestartButton"
 import FileUpload from "@/components/FileUpload"
@@ -8,16 +7,16 @@ import UrlInput from "@/components/UrlInput"
 
 const UploadStep: React.FC = () => {
   const { state, dispatch, processJobUrl } = useCvForm()
-  const { cvFile, jobUrl, jobDetails, profilePicture, isProcessingUrl } = state
+  const { cvFile, jobUrl, jobDetails, isProcessingUrl } = state
   const [resetKey, setResetKey] = useState(0)
 
   // Monitor changes to form state to detect resets
   useEffect(() => {
-    if (!cvFile && !jobUrl && !profilePicture) {
+    if (!cvFile && !jobUrl) {
       // Increment reset key to force component remount when form is reset
       setResetKey((prev) => prev + 1)
     }
-  }, [cvFile, jobUrl, profilePicture])
+  }, [cvFile, jobUrl])
 
   const handleFileSelected = (file: File | null) => {
     dispatch({ type: "SET_CV_FILE", payload: file })
@@ -31,17 +30,13 @@ const UploadStep: React.FC = () => {
     dispatch({ type: "SET_JOB_DETAILS", payload: details })
   }
 
-  const handleProfilePictureSelected = (file: File) => {
-    dispatch({ type: "SET_PROFILE_PICTURE", payload: file })
-  }
-
   return (
     <div className="step-container">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-semibold">
           Upload Your Resume & Job Posting
         </h2>
-        {(cvFile || jobUrl || profilePicture) && <RestartButton />}
+        {(cvFile || jobUrl) && <RestartButton />}
       </div>
       <p className="text-muted-foreground mb-8">
         We'll analyze both to create a tailored resume that highlights your
@@ -58,24 +53,16 @@ const UploadStep: React.FC = () => {
           />
         </div>
 
-        <div className="space-y-8">
-          <div>
-            <h3 className="text-base font-medium mb-3">Job Posting URL</h3>
-            <UrlInput
-              key={`url-input-${resetKey}`}
-              onUrlSubmit={handleUrlSubmit}
-              initialUrl={jobUrl}
-              initialJobText={jobDetails}
-              onProcessUrl={processJobUrl}
-              isProcessingUrl={isProcessingUrl}
-              onJobDetailsChange={handleJobDetailsChange}
-            />
-          </div>
-
-          <ProfilePictureUpload
-            key={`profile-picture-${resetKey}`}
-            onImageSelected={handleProfilePictureSelected}
-            initialImage={profilePicture}
+        <div>
+          <h3 className="text-base font-medium mb-3">Job Posting URL</h3>
+          <UrlInput
+            key={`url-input-${resetKey}`}
+            onUrlSubmit={handleUrlSubmit}
+            initialUrl={jobUrl}
+            initialJobText={jobDetails}
+            onProcessUrl={processJobUrl}
+            isProcessingUrl={isProcessingUrl}
+            onJobDetailsChange={handleJobDetailsChange}
           />
         </div>
       </div>

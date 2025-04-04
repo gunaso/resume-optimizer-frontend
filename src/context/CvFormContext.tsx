@@ -16,9 +16,11 @@ export interface CvFormState {
   jobUrl: string
   jobDetails: string
   isProcessingUrl: boolean
+  /* Kept for future use but currently unused */
   profilePicture: File | null
   selectedTemplateId: string | null
   aiInstructions: string
+  /* Kept for future use but currently unused */
   showPictureWarning: boolean
   _resetTimestamp: number
 }
@@ -29,9 +31,11 @@ type CvFormAction =
   | { type: "SET_JOB_URL"; payload: string }
   | { type: "SET_JOB_DETAILS"; payload: string }
   | { type: "SET_PROCESSING_URL"; payload: boolean }
+  /* Kept for future use but currently unused */
   | { type: "SET_PROFILE_PICTURE"; payload: File | null }
   | { type: "SET_TEMPLATE"; payload: string | null }
   | { type: "SET_AI_INSTRUCTIONS"; payload: string }
+  /* Kept for future use but currently unused */
   | { type: "SET_PICTURE_WARNING"; payload: boolean }
   | { type: "RESET_FORM" }
   | { type: "NEXT_STEP" }
@@ -148,24 +152,25 @@ export const CvFormProvider: React.FC<{ children: ReactNode }> = ({
     try {
       dispatch({ type: "SET_PROCESSING_URL", payload: true })
 
-      // Mock API call to process the job URL
-      const response = await fetch("/api/process-job-url", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ url }),
-      })
+      // API call to process the job URL
+      const response = await fetch(
+        "http://localhost:8000/reader/job-posting-url",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url }),
+        }
+      )
 
       if (!response.ok) {
         throw new Error("Failed to process job URL")
       }
 
       const data = await response.json()
-      dispatch({ type: "SET_JOB_DETAILS", payload: data.jobDetails })
-    } catch (error) {
-      console.error("Error processing job URL:", error)
-      // Could add error handling state here if needed
+      // Save the job details exactly as returned from the API, preserving Markdown format
+      dispatch({ type: "SET_JOB_DETAILS", payload: data.content })
     } finally {
       dispatch({ type: "SET_PROCESSING_URL", payload: false })
     }
